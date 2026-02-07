@@ -1,7 +1,16 @@
 {
   "name": "Gemini Workspace",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
-  
+
+  "remoteUser": "vscode",
+
+  "features": {
+    "ghcr.io/devcontainers/features/terraform:1": {},
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+
+  "postCreateCommand": "npm install -g @google/gemini-cli",
+
   "customizations": {
     "vscode": {
       "extensions": [
@@ -10,13 +19,6 @@
         "Google.gemini-cli-vscode-ide-companion"
       ]
     }
-  },
+  }
   
-  "postCreateCommand": "npm install -g @google/gemini-cli",
-
-  "features": {
-    "ghcr.io/devcontainers/features/terraform:1": {}
-  },
-
-  "remoteUser": "vscode"
 }
