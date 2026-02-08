@@ -14,16 +14,40 @@ This project uses Terraform to deploy a personal WireGuard VPN server on Google 
 - **Monitoring & Alerting:** Monitors CPU usage and billing to prevent unexpected costs.
 - **Automated Maintenance:** The VM is automatically updated with the latest security patches weekly.
 
-## Setup
+## Getting Started
 
-### 1. Prerequisites
+This guide will help you set up the environment needed to deploy and manage your personal VPN.
 
-- A Google Cloud Platform account with billing enabled.
-- A GitHub account and a repository for this project.
+### 1. Project Setup and API Enablement
 
-### 2. GCP Authentication
+If you are starting with a new Google Cloud project, you need to enable the required APIs.
 
-The GitHub Actions workflow needs to authenticate to your GCP account.
+1.  **Create a new GCP Project:** If you don't have one already, create a new project in the [GCP Console](https://console.cloud.google.com/).
+2.  **Enable Billing:** Make sure billing is enabled for your project.
+3.  **Enable APIs:** Enable the following APIs for your project. You can do this from the [APIs & Services Dashboard](https://console.cloud.google.com/apis/dashboard).
+    -   `Compute Engine API`
+    -   `Cloud Billing API`
+    -   `Cloud Billing Budget API`
+    -   `Cloud Monitoring API`
+    -   `OS Config API`
+    -   `Cloud Scheduler API`
+    -   `Pub/Sub API`
+
+    You can enable them all with the following `gcloud` command:
+    ```bash
+    gcloud services enable \
+      compute.googleapis.com \
+      cloudbilling.googleapis.com \
+      billingbudgets.googleapis.com \
+      monitoring.googleapis.com \
+      osconfig.googleapis.com \
+      cloudscheduler.googleapis.com \
+      pubsub.googleapis.com
+    ```
+
+### 2. GitHub Actions Authentication
+
+The GitHub Actions workflow needs to authenticate to your GCP account to manage the infrastructure.
 
 1.  **Create a Service Account:**
     -   In the GCP Console, navigate to **IAM & Admin > Service Accounts**.
@@ -51,26 +75,42 @@ The GitHub Actions workflow needs to authenticate to your GCP account.
         -   `GCP_PROJECT_ID`: Your GCP project ID.
         -   `GCP_SA_KEY`: The contents of the JSON key file you downloaded.
         -   `GCP_BILLING_ACCOUNT_ID`: Your GCP billing account ID. You can find this in the GCP Console under **Billing**.
+        -   `NOTIFICATION_EMAIL`: The email address to send monitoring alerts to.
 
-### 3. Terraform Variables
+### 3. Local Development Authentication
 
-Create a file named `terraform/terraform.tfvars` with the following content:
+If you are developing locally within the dev container, you need to authenticate the gcloud CLI.
 
-```hcl
-gcp_project_id         = "your-gcp-project-id"
-notification_email     = "your-email@example.com"
-gcp_billing_account_id = "your-gcp-billing-account-id"
-```
+1.  **Login to Google Cloud:**
+    Run the following command in your terminal:
+    ```bash
+    gcloud auth login
+    ```
+    This will open a browser window for you to log in to your Google account.
 
-Replace the values with your actual GCP project ID, notification email, and billing account ID.
+2.  **Set Application Default Credentials (ADC):**
+    Run the following command:
+    ```bash
+    gcloud auth application-default login
+    ```
+
+3.  **Set the Quota Project:**
+    To avoid issues with the billing API, set the quota project:
+    ```bash
+    gcloud auth application-default set-quota-project YOUR_GCP_PROJECT_ID
+    ```
+    Replace `YOUR_GCP_PROJECT_ID` with your actual GCP project ID.
 
 ### 4. Deployment
 
 The deployment is fully automated using GitHub Actions.
 
-1.  Commit the `terraform.tfvars` file (or ensure the variables are set in your CI/CD environment).
-2.  Push your changes to the `main` branch of your repository.
-3.  The GitHub Actions workflow will automatically run `terraform apply` and deploy your VPN server.
+1.  Push your changes to the `main` branch of your repository.
+2.  The GitHub Actions workflow will automatically run `terraform apply` and deploy your VPN server.
+3.  If you want to run terraform locally, you will need to provide the variables `gcp_project_id`, `notification_email`, and `gcp_billing_account_id`. You can do this by creating a `terraform.tfvars` file or by passing them as command-line arguments. For example:
+    ```bash
+    terraform apply -var="gcp_project_id=your-project-id" -var="notification_email=your-email" -var="gcp_billing_account_id=your-billing-id"
+    ```
 
 ### 5. Retrieve Client Configuration
 

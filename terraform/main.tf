@@ -10,7 +10,6 @@ terraform {
 provider "google" {
   project = var.gcp_project_id
   region  = var.gcp_region
-  zone    = var.gcp_zone
 }
 
 resource "google_compute_network" "vpn_network" {
@@ -50,7 +49,7 @@ resource "google_compute_instance_template" "vpn_template" {
   }
 
   disk {
-    source_image = "debian-cloud/debian-11"
+    source_image = "debian-cloud/debian-12"
     auto_delete  = true
     boot         = true
   }
@@ -75,10 +74,14 @@ resource "google_compute_instance_template" "vpn_template" {
   }
 }
 
+data "google_compute_zones" "available" {
+  region = var.gcp_region
+}
+
 resource "google_compute_instance_group_manager" "vpn_igm" {
   name               = "personal-vpn-igm"
   base_instance_name = "personal-vpn-vm"
-  zone               = var.gcp_zone
+  zone               = data.google_compute_zones.available.names[0]
   version {
     instance_template = google_compute_instance_template.vpn_template.id
   }
@@ -92,10 +95,8 @@ resource "google_compute_instance_group_manager" "vpn_igm" {
 
 resource "google_compute_health_check" "autohealing" {
   name                = "autohealing-health-check"
-  check {
-    tcp_health_check {
-      port = 22
-    }
+  tcp_health_check {
+    port = 22
   }
   timeout_sec         = 5
   check_interval_sec  = 5

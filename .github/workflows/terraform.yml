@@ -46,10 +46,16 @@ jobs:
         id: plan
         if: github.event_name == 'pull_request'
         run: |
-          terraform plan -no-color -var="gcp_project_id=${{ secrets.GCP_PROJECT_ID }}"
+          terraform plan -no-color \
+            -var="gcp_project_id=${{ secrets.GCP_PROJECT_ID }}" \
+            -var="notification_email=${{ secrets.NOTIFICATION_EMAIL }}" \
+            -var="gcp_billing_account_id=${{ secrets.GCP_BILLING_ACCOUNT_ID }}"
         continue-on-error: true
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          terraform apply -auto-approve -var="gcp_project_id=${{ secrets.GCP_PROJECT_ID }}"
+          terraform apply -auto-approve \
+            -var="gcp_project_id=${{ secrets.GCP_PROJECT_ID }}" \
+            -var="notification_email=${{ secrets.NOTIFICATION_EMAIL }}" \
+            -var="gcp_billing_account_id=${{ secrets.GCP_BILLING_ACCOUNT_ID }}"

@@ -7,18 +7,22 @@ variable "gcp_region" {
   description = "The GCP region to deploy the VPN server to."
   type        = string
   default     = "us-central1"
-}
 
-variable "gcp_zone" {
-  description = "The GCP zone to deploy the VPN server to."
-  type        = string
-  default     = "us-central1-a"
+  validation {
+    condition     = contains(["us-west1", "us-central1", "us-east1"], var.gcp_region)
+    error_message = "The GCP region must be one of the following to be eligible for the GCP Free Tier: us-west1, us-central1 or us-east1."
+  }
 }
 
 variable "machine_type" {
-  description = "The machine type for the VPN server."
+  description = "The machine type to use for the VPN server."
   type        = string
   default     = "e2-micro"
+
+  validation {
+    condition     = var.machine_type == "e2-micro"
+    error_message = "The machine type must be e2-micro to be eligible for the GCP Free Tier."
+  }
 }
 
 variable "notification_email" {
